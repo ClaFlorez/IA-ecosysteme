@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projet 10.1 - Intégration Écosystème IA</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #667eea;
+            margin-bottom: 10px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .job-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 30px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .steps-container {
+            display: grid;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .step-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            opacity: 0;
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .step-card:nth-child(1) { animation-delay: 0.1s; }
+        .step-card:nth-child(2) { animation-delay: 0.2s; }
+        .step-card:nth-child(3) { animation-delay: 0.3s; }
+        .step-card:nth-child(4) { animation-delay: 0.4s; }
+        .step-card:nth-child(5) { animation-delay: 0.5s; }
+
+        .step-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .step-card.active {
+            border: 3px solid #667eea;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .step-title {
+            font-size: 1.5em;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .step-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .step-card.active .step-content {
+            max-height: 5000px;
+        }
+
+        .subsection {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .subsection h4 {
+            color: #764ba2;
+            margin-bottom: 10px;
+        }
+
+        .info-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-list li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .info-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .location-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .location-card {
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .location-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .location-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .location-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .location-jobs {
+            font-size: 2em;
+            font-weight: bold;
+            color: #764ba2;
+            margin: 10px 0;
+        }
+
+        .location-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+            margin-top: 20px;
+        }
+
+        .companies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .company-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .company-card:hover {
+            border-color: #667eea;
+            transform: scale(1.05);
+        }
+
+        .skills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .skill-tag {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        .deliverable {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        .deliverable h2 {
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        .deliverable-list {
+            list-style: none;
+        }
+
+        .deliverable-list li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .deliverable-list li:before {
+            content: "📄";
+            position: absolute;
+            left: 0;
+        }
+
+        .cta-button {
+            background: white;
+            color: #667eea;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .cta-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .job-offers {
+            display: grid;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .job-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .job-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .job-card h5 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .job-details {
+            font-size: 0.9em;
+            color: #666;
+            line-height: 1.8;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .step-title {
+                font-size: 1.2em;
+            }
+
+            .location-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-wrapper {
+                height: 300px;
+            }
+        }
+
+        .stats-summary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .stats-summary h3 {
+            margin-bottom: 15px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 Projet 10.1 - Intégration Écosystème IA</h1>
+				<h2 style="margin-top:10px; color:#764ba2; font-size:1.8em; font-weight:bold;
+				text-transform:uppercase; letter-spacing:1px; text-shadow:0 2px 6px rgba(0,0,0,0.2);">
+				Claudia Florez Coelho
+				</h2>
+            <p class="subtitle">Version minimaliste : 5 étapes pour intégrer le monde professionnel de l'IA</p>
+            <div class="job-badge">Machine Learning Engineer</div>
+			
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+        </header>
+
+        <div class="steps-container">
+            <!-- ÉTAPE 1 -->
+            <div class="step-card" onclick="toggleStep(this, 0)">
+                <div class="step-header">
+                    <div class="step-number">1</div>
+                    <div class="step-title">Choisir un métier IA et cartographier son marché</div>
+                </div>
+                <div class="step-content">
+                    <p><strong>Objectif :</strong> Analyser la présence du métier Machine Learning Engineer dans 9 zones géographiques</p>
+                    
+                    <div class="stats-summary">
+                        <h3>📊 Vue d'ensemble du marché mondial</h3>
+                        <p>Total estimé des offres d'emploi actives</p>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-number">6,000+</div>
+                                <div class="stat-label">Offres totales</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">8</div>
+                                <div class="stat-label">Zones analysées</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">$150K</div>
+                                <div class="stat-label">Salaire moyen CAD</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4>📍 Cartographie géographique des opportunités</h4>
+                        <div class="location-grid">
+                            <div class="location-card" data-jobs="223">
+                                <div class="location-name">🍁 Québec</div>
+                                <div class="location-jobs">~223</div>
+                                <div class="location-label">offres d'emploi</div>
+                            </div>
+                            <div class="location-card" data-jobs="250">
+                                <div class="location-name">🏙️ Montréal</div>
+                                <div class="location-jobs">~250</div>
+                                <div class="location-label">offres d'emploi</div>
+                            </div>
+                            <div class="location-card" data-jobs="850">
+                                <div class="location-name">🇨🇦 Toronto</div>
+                                <div class="location-jobs">~850</div>
+                                <div class="location-label">offres d'emploi</div>
+                            </div>
+                            <div class="location-card" data-jobs="1500">
+                                <div class="location-name">🗽 New York</div>
+                                <div class="location-jobs">~1,500</div>
+                                <div class="location-label">offres d'emploi</div>
+                            </div>
+                            <div class="location-card" data-jobs="150">
+                                <div class="location-name">🇨🇴 Colombia</div>
+                                <div class="location-jobs">~150</div>
+                                <div class="location-label">offres d'emploi</div>
+                            </div>
+                            <div class="location-card" data-jobs="230">
+                                <div class="location-name">🇲🇽 Mexico</div>
+                                <div class="location-jobs">~230</div>
+                                <div class="location-label">offres d'emploi</div>
+                            </div>
+                            <div class="location-card" data-jobs="349">
+                                <div class="location-name">🇪🇸 Madrid</div>
+                                <div class="location-jobs">~349</div>
+                                <div class="location-label">offres d'emploi</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <h4>📈 Analyse comparative des marchés</h4>
+                        <div class="chart-wrapper">
+                            <canvas id="marketChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4>🎯 Définition du métier Machine Learning Engineer</h4>
+                        <ul class="info-list">
+                            <li><strong>Missions principales:</strong> Concevoir, développer et déployer des modèles ML en production</li>
+                            <li><strong>Livrables types:</strong> Pipelines ML, modèles entraînés, APIs de prédiction, documentation technique</li>
+                            <li><strong>Mots-clés techniques:</strong> Python, TensorFlow, PyTorch, MLOps, Kubernetes, Docker</li>
+                            <li><strong>Alias de recherche:</strong> ML Engineer, AI Engineer, Applied ML Scientist</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4>💰 Niveaux de salaire (données disponibles)</h4>
+                        <ul class="info-list">
+                            <li><strong>Montréal:</strong> 100K - 240K CAD</li>
+                            <li><strong>Toronto:</strong> 130K - 170K CAD</li>
+                            <li><strong>New York:</strong> 147K - 275K USD</li>
+                            <li><strong>Canada (moyenne):</strong> 142K CAD/an</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ÉTAPE 2 -->
+            <div class="step-card" onclick="toggleStep(this, 1)">
+                <div class="step-header">
+                    <div class="step-number">2</div>
+                    <div class="step-title">Mener une recherche LinkedIn approfondie</div>
+                </div>
+                <div class="step-content">
+                    <div class="subsection">
+                        <h4>💼 2.1 Analyser 5-10 offres d'emploi</h4>
+                        <div class="job-offers">
+                            <div class="job-card">
+                                <h5>1. Ateko (Bell Canada) - Ingénieur de données ML</h5>
+                                <div class="job-details">
+                                    📍 Montréal (hybride)<br>
+                                    💰 Non spécifié<br>
+                                    ⏰ 3-9 ans d'expérience<br>
+                                    <strong>Technologies clés:</strong> Python, Azure, Databricks, Spark SQL, Azure ML
+                                </div>
+                            </div>
+                            
+                            <div class="job-card">
+                                <h5>2. ALTEN - Développeur IA-ML</h5>
+                                <div class="job-details">
+                                    📍 Montréal, QC<br>
+                                    💰 Non spécifié<br>
+                                    ⏰ 3+ ans d'expérience<br>
+                                    <strong>Focus:</strong> Classification documents, modèles multimodaux, LLM
+                                </div>
+                            </div>
+
+                            <div class="job-card">
+                                <h5>3. hackajob (US Mobile) - AI/ML Engineer</h5>
+                                <div class="job-details">
+                                    📍 Montréal, QC<br>
+                                    💰 150k - 240k CAD<br>
+                                    ⏰ 3+ ans d'expérience<br>
+                                    <strong>Spécialité:</strong> Multi-agent LLM, NLP, AWS Bedrock
+                                </div>
+                            </div>
+
+                            <div class="job-card">
+                                <h5>4. Plusgrade - Développeur ML Application</h5>
+                                <div class="job-details">
+                                    📍 Montréal uniquement<br>
+                                    💰 Non spécifié<br>
+                                    ⏰ 4+ ans d'expérience<br>
+                                    <strong>Stack:</strong> Python, AWS (SageMaker, Bedrock), Kubernetes, Snowflake
+                                </div>
+                            </div>
+
+                            <div class="job-card">
+                                <h5>5. Lilo - Data Engineer/ML Engineer</h5>
+                                <div class="job-details">
+                                    📍 Remote (LatAm)<br>
+                                    💰 Stock options<br>
+                                    ⏰ 2+ ans d'expérience<br>
+                                    <strong>Technologies:</strong> Python, TensorFlow, PyTorch, AWS/GCP/Azure
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4>🔧 Top 5 Compétences Clés Demandées</h4>
+                        <div class="skills-container">
+                            <div class="skill-tag">1. Python</div>
+                            <div class="skill-tag">2. Machine Learning</div>
+                            <div class="skill-tag">3. AWS/Azure/GCP</div>
+                            <div class="skill-tag">4. MLOps</div>
+                            <div class="skill-tag">5. LLM & NLP</div>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <strong>Technologies complémentaires:</strong> Docker, Kubernetes, TensorFlow, PyTorch, Scikit-learn, Databricks, Spark
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4>🏢 2.2 Entreprises dans le domaine</h4>
+                        <div class="companies-grid">
+                            <div class="company-card">
+                                <strong>Google</strong><br>
+                                39.3M+ followers
+                            </div>
+                            <div class="company-card">
+                                <strong>OpenAI</strong><br>
+                                9M+ followers
+                            </div>
+                            <div class="company-card">
+                                <strong>Mila</strong><br>
+                                89.6K followers
+                            </div>
+                            <div class="company-card">
+                                <strong>AWS Certification</strong><br>
+                                592K members
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4>👥 2.3 Professionnels à suivre (10)</h4>
+                        <ul class="info-list">
+                            <li>Doug Rose - AI & Data Ethics (196.9K followers)</li>
+                            <li>Brij kishore Pandey - AI Architect (684.3K followers)</li>
+                            <li>Haythem REHOUMA - Cloud Architect, Ph.D.</li>
+                            <li>Jean-Louis Pommier - TGC Group Specialist</li>
+                            <li>Juvenal CHOKOGOUE - Certified Cloud & Big Data Architect</li>
+                            <li>Pierre-Luc Thivierge - Founder @ CollabMachine</li>
+                            <li>Olivier Viera - Software Developer @ CAE</li>
+                            <li>Gauraang Malik - AI Consultant</li>
+                            <li>Christian Beaubien - Entrepreneur in Residence</li>
+                            <li>Yamlal Gotame - AI Security & Compliance Auditor</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ÉTAPE 3 -->
+            <div class="step-card" onclick="toggleStep(this, 2)">
+                <div class="step-header">
+                    <div class="step-number">3</div>
+                    <div class="step-title">S'intégrer à l'écosystème IA</div>
+                </div>
+                <div class="step-content">
+                    <div style="text-align: center; margin: 20px 0; padding: 20px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); border-radius: 15px; border: 2px solid #667eea;">
+                        <h4 style="color: #764ba2; margin-bottom: 15px;">📸 Mon profil LinkedIn optimisé</h4>
+                        <img id="linkedinImage" 
+                             src="presentation_linkeding.JPG" 
+                             alt="Profil LinkedIn optimisé" 
+                             style="width: 60%; min-width: 300px; max-width: 600px; border-radius: 15px; box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3); border: 3px solid white;">
+                        <p style="margin-top: 15px; font-size: 0.95em; color: #666; font-weight: 500;">
+                        </p>
+                    </div>
+					<div style="text-align:center; margin:30px 0;">
+				<a href="https://www.linkedin.com/in/claflorez" target="_blank"
+					style="display:inline-block; padding:15px 30px; background:linear-gradient(135deg,#667eea,#764ba2);
+					color:white; font-weight:bold; font-size:1.2em; border-radius:50px; text-decoration:none;
+					box-shadow:0 5px 20px rgba(102,126,234,0.3); transition:all 0.3s ease;">
+			 🔗 Visitez mon profil LinkedIn : Claudia Florez Coelho
+				</a>
+</div>
+                    <script>
+                        const img = document.getElementById('linkedinImage');
+                        
+                        img.onerror = function() {
+                            console.log('❌ Erreur de chargement de l\'image');
+                            this.style.display = 'none';
+                            this.parentElement.innerHTML += '<div style="padding: 40px; background: white; border-radius: 10px; border: 2px dashed #667eea;"><p style="color: #667eea; font-size: 1.1em;">⚠️ Image non disponible</p><p style="color: #666; margin-top: 10px;">Assurez-vous que l\'image Google Drive est partagée publiquement (Accès: Tous les utilisateurs disposant du lien)</p></div>';
+                        };
+                        
+                        img.onload = function() {
+                            console.log('✅ Image chargée avec succès depuis Google Drive !');
+                        };
+                    </script>
+                    <div class="subsection">
+                        <h4>👥 3.1 Rejoindre 5 groupes LinkedIn</h4>
+                        <ul class="info-list">
+                            <li><strong>Francophones:</strong>
+                                <ul style="margin-left: 20px; margin-top: 10px;">
+                                    <li>Technologie de l'information du Grand Montreal (15.1K membres)</li>
+                                    <li>Comunidad IA y Ciencia de Datos en Español (1.2K membres)</li>
+                                </ul>
+                            </li>
+                            <li><strong>Anglophones:</strong>
+                                <ul style="margin-left: 20px; margin-top: 10px;">
+                                    <li>The AI Collective (100K+ membres)</li>
+                                    <li>Somos LIT - Latinx in Tech Montreal</li>
+                                    <li>Collab Machine (2K followers)</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4>💬 3.2 Identifier 3 serveurs Discord IA</h4>
+                        <ul class="info-list">
+                            <li>Serveurs spécialisés dans ML Engineering</li>
+                            <li>Communautés d'apprentissage: Coursera, AWS Academy, IBM Education</li>
+                            <li>Serveurs d'outils: LangChain, Hugging Face</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4>🎤 3.3 Événements à considérer</h4>
+                        <p><strong>AI Salon Montreal #9</strong><br>
+                        📍 1375 Ave. Thérèse-Lavoie-Roux, Montréal<br>
+                        Meetup pour fondateurs, investisseurs et acteurs IA</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ÉTAPE 4 -->
+            <div class="step-card" onclick="toggleStep(this, 3)">
+                <div class="step-header">
+                    <div class="step-number">4</div>
+                    <div class="step-title">Réaliser des actions LinkedIn concrètes</div>
+                </div>
+				
+                <div class="step-content">
+				 <div class="subsection">
+                        <h4>✅ Actions réalisées</h4>
+                      
+                    </div>
+				
+				<!-- 🎬 FRAME DE 3 : Video + 2 imágenes -->
+				<div style="display: flex; justify-content: center; align-items: center; gap: 20px; flex-wrap: wrap; margin: 30px 0;">
+		<!-- Imagen izquierda -->
+		<div style="flex: 1; min-width: 250px; text-align: center;">
+        <img src="IA9.jpeg" alt="Photo gauche - préparation LinkedIn" 
+             style="width: 100%; max-width: 350px; border-radius: 15px; 
+                    box-shadow: 0 6px 20px rgba(0,0,0,0.2); border: 3px solid white;">
+        <p style="color:#666; font-size:0.9em;">AI salon - Montreal #9 - StartUp - Octobre - 2025 </p>
+		</div>
+
+		<!-- Vidéo centrale -->
+		<div style="flex: 1.2; min-width: 300px; text-align: center;">
+		<video width="85%" autoplay muted loop playsinline 
+			style="border-radius:15px; box-shadow:0 8px 25px rgba(102,126,234,0.3); border:3px solid white;">
+         <source src="somos.mp4" type="video/mp4">
+            Votre navigateur ne supporte pas la lecture vidéo.
+        </video>
+			<p style="color:#666; font-size:0.9em;">🎬 Présentation — Somos Latinx Tech Montréal</p>
+		</div>
+
+		<!-- Imagen derecha -->
+		<div style="flex: 1; min-width: 250px; text-align: center;">
+			<img src="ia-c1.jpeg" alt="Photo droite - networking AI" 
+             style="width: 100%; max-width: 350px; border-radius: 15px; 
+                    box-shadow: 0 6px 20px rgba(0,0,0,0.2); border: 3px solid white;">
+        <p style="color:#666; font-size:0.9em;">Événement The AI Collective at McGill</p>
+		</div>
+</div>
+
+<div style="display: flex; justify-content: center; align-items: center; gap: 20px; flex-wrap: wrap; margin: 30px 0;">
+	 <!-- Imagen izquierda -->
+    <div style="flex: 1; min-width: 250px; text-align: center;">
+        <img src="ia-collective.jpeg" alt="Photo gauche - préparation LinkedIn" 
+             style="width: 100%; max-width: 350px; border-radius: 15px; 
+                    box-shadow: 0 6px 20px rgba(0,0,0,0.2); border: 3px solid white;">
+        <p style="color:#666; font-size:0.9em;">Événement The AI Collective at McGill</p>
+    </div>
+
+    <!-- Vidéo centrale -->
+    <div style="flex: 1; min-width: 250px; text-align: center;">
+        <img src="IA-col2.jpeg" alt="Photo gauche - préparation LinkedIn" 
+             style="width: 100%; max-width: 350px; border-radius: 15px; 
+                    box-shadow: 0 6px 20px rgba(0,0,0,0.2); border: 3px solid white;">
+        <p style="color:#666; font-size:0.9em;">Événement The AI Collective at McGill - LLM</p>
+    </div>
+
+    <!-- Imagen derecha -->
+    <div style="flex: 1; min-width: 250px; text-align: center;">
+        <img src="salon10.JPG" alt="Photo droite - networking AI" 
+             style="width: 100%; max-width: 350px; border-radius: 15px; 
+                    box-shadow: 0 6px 20px rgba(0,0,0,0.2); border: 3px solid white;">
+        <p style="color:#666; font-size:0.9em;">AI salon - Montreal #10 - novembre 2025</p>
+    </div>
+</div>
+				<div style="text-align:center; margin:40px 0;">
+  <a href="https://www.youtube.com/@Claud-IAInsights" target="_blank"
+     style="background:#FF0000; color:white; border-radius:50%; width:60px; height:60px;
+            display:inline-flex; align-items:center; justify-content:center;
+            text-decoration:none; font-size:1.8em; box-shadow:0 4px 15px rgba(255,0,0,0.4);
+            transition:transform 0.3s ease;">
+    ▶️
+  </a>
+  <p style="color:#666; margin-top:10px;">YouTube – Claud-IA Insights</p>
+</div>	
+				
+                   
+                </div>
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+    <script>
+        let completedSteps = 0;
+        const totalSteps = 5;
+        let marketChart = null;
+
+        const jobData = {
+            labels: ['Québec', 'Montréal', 'Toronto', 'New York', 'Colombia', 'Mexico', 'Madrid'],
+            datasets: [{
+                label: 'Nombre d\'offres d\'emploi ML Engineer',
+                data: [223, 250, 850, 1500, 150, 230, 349],
+                backgroundColor: [
+                    'rgba(102, 126, 234, 0.8)',
+                    'rgba(118, 75, 162, 0.8)',
+                    'rgba(102, 126, 234, 0.7)',
+                    'rgba(118, 75, 162, 0.7)',
+                    'rgba(102, 126, 234, 0.6)',
+                    'rgba(118, 75, 162, 0.6)',
+                    'rgba(102, 126, 234, 0.5)'
+                ],
+                borderColor: [
+                    'rgba(102, 126, 234, 1)',
+                    'rgba(118, 75, 162, 1)',
+                    'rgba(102, 126, 234, 1)',
+                    'rgba(118, 75, 162, 1)',
+                    'rgba(102, 126, 234, 1)',
+                    'rgba(118, 75, 162, 1)',
+                    'rgba(102, 126, 234, 1)'
+                ],
+                borderWidth: 2
+            }]
+        };
+
+        function toggleStep(element, stepIndex) {
+            const wasActive = element.classList.contains('active');
+            
+            document.querySelectorAll('.step-card').forEach(card => {
+                card.classList.remove('active');
+            });
+
+            if (!wasActive) {
+                element.classList.add('active');
+                if (stepIndex < totalSteps) {
+                    completedSteps = stepIndex + 1;
+                    updateProgress();
+                }
+                
+                if (stepIndex === 0 && !marketChart) {
+                    setTimeout(() => {
+                        initChart();
+                    }, 300);
+                }
+            }
+        }
+
+        function updateProgress() {
+            const percentage = (completedSteps / totalSteps) * 100;
+            document.getElementById('progressBar').style.width = percentage + '%';
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('marketChart');
+            if (!ctx) return;
+
+            if (marketChart) {
+                marketChart.destroy();
+            }
+
+            marketChart = new Chart(ctx, {
+                type: 'bar',
+                data: jobData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                color: '#667eea'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(102, 126, 234, 0.9)',
+                            titleFont: {
+                                size: 16
+                            },
+                            bodyFont: {
+                                size: 14
+                            },
+                            padding: 12,
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Offres: ~' + context.parsed.y;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                font: {
+                                    size: 12
+                                },
+                                color: '#666'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Nombre d\'offres',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                color: '#667eea'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 12
+                                },
+                                color: '#666'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 1500,
+                        easing: 'easeInOutQuart'
+                    }
+                }
+            });
+        }
+
+        document.querySelectorAll('.location-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const jobs = this.dataset.jobs;
+                const location = this.querySelector('.location-name').textContent;
+                alert(`${location}\n\nNombre d'offres estimées: ~${jobs}\n\nCes données proviennent d'analyses récentes du marché de l'emploi ML Engineer.`);
+            });
+        });
+
+        window.addEventListener('load', () => {
+            updateProgress();
+        });
+    </script>
+
+</body>
+</html>
